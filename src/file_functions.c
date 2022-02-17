@@ -21,6 +21,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <SDL.h>
 
@@ -28,13 +29,16 @@ char *get_filename_ext(const char *src_filename, const char *new_ext)
 {
 	int dst_namelength = strlen(src_filename)+1;
 	char *dst_filename;
-	char *posname, *posext;
+	char *posname = NULL;
+	char *posext = NULL;
 
 	dst_filename = (char *) malloc(dst_namelength);
 	if (!dst_filename) {
 		fprintf(stderr, "Can not allocate %d bytes\n", dst_namelength);
 		return NULL;
 	}
+
+	memset(dst_filename, 0, dst_namelength);
 
 	posname = strrchr(src_filename, '/');
 	if (posname) {

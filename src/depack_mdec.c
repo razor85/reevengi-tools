@@ -46,8 +46,8 @@
 #define	toINT(a)	((a)>>SHIFT)
 #define	FIX_1		toFIX(1)
 #define	MULR(a)		toINT((a)*toFIX(1.402))
-#define	MULG(a)		toINT((a)*toFIX(-0.3437))
-#define	MULG2(a)	toINT((a)*toFIX(-0.7143))
+#define	MULG(a)		toINT((a)*toFIX(-0.714136))
+#define	MULG2(a)	toINT((a)*toFIX(-0.344136))
 #define	MULB(a)		toINT((a)*toFIX(1.772))
 
 enum {B,G,R};
@@ -218,62 +218,63 @@ static void iqtab_init(bs_context_t *ctxt)
 	}
 }
 
-void mdec_depack(SDL_RWops *src, Uint8 **dstBufPtr, int *dstLength,
+void mdec_depack(SDL_RWops* src, Uint8** dstBufPtr, int* dstLength,
 	int width, int height)
 {
 	bs_context_t ctxt;
 	Uint16	vlc_id;
-	int height2 = (height+15)&~15;
-	int width2 = (width*3)>>1;
-	int w = 8*3;
-	int slice = (height2 * w)>>1;
-	int x,y;
-	Uint16 *image;
+	int height2 = (height + 15) & ~15;
+	int width2 = (width * 3) >> 1;
+	int w = 8 * 3;
+	int slice = (height2 * w) >> 1;
+	int x, y;
+	Uint16* image;
 
 	*dstBufPtr = NULL;
 	dstOffset = *dstLength = 0;
 
 	ctxt.src = src;
 
-	SDL_RWseek(src, 2, RW_SEEK_CUR); /* skip block length */
+	printf("File position: %d\n", SDL_RWtell(src));
+	printf("Block length 0x%04x\n", SDL_ReadLE16(src));
+	// SDL_RWseek(src, 2, RW_SEEK_CUR); /* skip block length */
 
+	printf("Reading vlc_id at %d\n", SDL_RWtell(src));
 	vlc_id = SDL_ReadLE16(src);
 	if (vlc_id != VLC_ID) {
 		fprintf(stderr, "mdec: Unknown vlc id: 0x%04x\n", vlc_id);
 		return;
 	}
 
-	image = (Uint16 *) malloc(height2 * w * sizeof(Uint16));
+	image = (Uint16*)malloc(height2 * w * sizeof(Uint16));
 	if (!image) {
 		fprintf(stderr, "mdec: Can not allocate memory for temp buffer\n");
 		return;
 	}
 
-	dstBufLen = width*height*4;
-	dstPointer = (Uint16 *) malloc(dstBufLen);
+	dstBufLen = width * height * 4;
+	dstPointer = (Uint16*)malloc(dstBufLen);
 	if (!dstPointer) {
 		fprintf(stderr, "mdec: Can not allocate memory for final buffer\n");
 		free(image);
 		return;
 	}
-	
+
 	iqtab_init(&ctxt);
 	bs_init();
 
-	for (x=0; x<width2; x+=w) {
-		Uint16 *dst,*src;
-		/*printf("x=%d\n",x);*/
+	for (x = 0; x < width2; x += w) {
+		Uint16* imgDst = NULL;
+		Uint16* imgSrc = NULL;
+		dec_dct_out(&ctxt, image, slice);
 
-		dec_dct_out(&ctxt,image,slice);
-
-		src = image;
- 		/*dst = buf2+x+(0)*width;*/
-		dst = &dstPointer[x];
- 		for(y=height-1; y>=0; y--) {
- 			memcpy(dst,src,w*2);
- 			src+=w;
- 			dst+=width2;
- 		}
+		imgSrc = image;
+		imgDst = &dstPointer[x];
+		for (y = height - 1; y >= 0; y--) {
+			memcpy(imgDst, imgSrc, w * 2);
+			imgSrc += w;
+			imgDst += width2;
+		}
 	}
 
 	free(image);
