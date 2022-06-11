@@ -85,15 +85,19 @@ int convert_image(const char *filename)
 		vlc_depack(src, &dstBuffer, &dstBufLen);
 		printf("Reading TIM starting from %d\n", SDL_RWtell(src));
 
-		const uint16_t timPrefix = SDL_ReadLE16(src);
+		uint16_t timPrefix = SDL_ReadLE16(src);
+		if (timPrefix == 0x7220)
+			timPrefix = SDL_ReadLE16(src);
 		const int hasTim = ((timPrefix == 0x0000 && SDL_ReadLE16(src) == 0xFFFF) || (timPrefix == 0xFFFF));
 		if (hasTim) {
 			SDL_RWseek(src, -6, RW_SEEK_CUR);
 
 			const uint32_t timLength = SDL_ReadLE32(src);
 			printf("TIM Length: %d\n", timLength);
-			if (SDL_ReadLE16(src) != 0xFFFF) {
-				printf("Expected 0xFFFF separator at %d\n", SDL_RWtell(src));
+
+			const uint16_t separator = SDL_ReadLE16(src);
+			if (separator != 0xFFFF) {
+				printf("Expected 0xFFFF separator at %d, got %x\n", SDL_RWtell(src), separator);
 				return 1;
 			}
 
@@ -113,7 +117,7 @@ int convert_image(const char *filename)
 			bsssld_depack_re2((Uint8*)timReadBuffer, restOfFileSize, &timDstBuffer, &timDstBufferLength);
 
 			char tmpFilenameSuffix[15] = { 0 };
-			sprintf(tmpFilenameSuffix, "0%d.TIM", filenameSuffix);
+			sprintf(tmpFilenameSuffix, "0%03d.TIM", filenameSuffix);
 			strcpy(extensionPosition, tmpFilenameSuffix);
 
 			SDL_RWops* timFile = SDL_RWFromFile(newFilename, "wb");
@@ -136,7 +140,7 @@ int convert_image(const char *filename)
 					SDL_Surface *image = mdec_surface(dstMdecBuf,320,240,0);
 					if (image) {
 						char tmpFilenameSuffix[15] = { 0 };
-						sprintf(tmpFilenameSuffix, "0%d.BMP", filenameSuffix);
+						sprintf(tmpFilenameSuffix, "0%03d.BMP", filenameSuffix);
 						strcpy(extensionPosition, tmpFilenameSuffix);
 
 						save_bmp(newFilename, image);
