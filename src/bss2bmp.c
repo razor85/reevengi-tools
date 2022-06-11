@@ -34,9 +34,9 @@
 #include "depack_mdec.h"
 #include "file_functions.h"
 
-int convert_image(const char *filename)
+int convert_image(const char* filename)
 {
-	SDL_RWops *src;
+	SDL_RWops* src;
 	int retval = 1;
 
 	src = SDL_RWFromFile(filename, "rb");
@@ -53,7 +53,7 @@ int convert_image(const char *filename)
 	size_t filenameSuffix = 0;
 
 	const size_t newFilenameLength = strlen(filename) + 15;
-	char* newFilename = (char*) malloc(newFilenameLength);
+	char* newFilename = (char*)malloc(newFilenameLength);
 	if (newFilename == NULL) {
 		fprintf(stderr, "Failed to allocate new filename\n");
 		return 1;
@@ -74,7 +74,7 @@ int convert_image(const char *filename)
 		printf("ID %x - VERSION %x\n", id, version);
 		if (id != 0x3800 || version != 0x0003)
 			break;
-		
+
 		SDL_RWseek(src, currentInterval, RW_SEEK_SET);
 		currentInterval += fileInterval;
 		printf("Next interval %d out of %d\n", currentInterval, fileSize);
@@ -88,6 +88,7 @@ int convert_image(const char *filename)
 		uint16_t timPrefix = SDL_ReadLE16(src);
 		if (timPrefix == 0x7220)
 			timPrefix = SDL_ReadLE16(src);
+
 		const int hasTim = ((timPrefix == 0x0000 && SDL_ReadLE16(src) == 0xFFFF) || (timPrefix == 0xFFFF));
 		if (hasTim) {
 			SDL_RWseek(src, -6, RW_SEEK_CUR);
@@ -126,18 +127,18 @@ int convert_image(const char *filename)
 		}
 
 		if (dstBuffer && dstBufLen) {
-			SDL_RWops *mdec_src;
+			SDL_RWops* mdec_src;
 
 			mdec_src = SDL_RWFromMem(dstBuffer, dstBufLen);
 			if (mdec_src) {
-				Uint8 *dstMdecBuf;
+				Uint8* dstMdecBuf;
 				int dstMdecLen;
 
-				mdec_depack(mdec_src, &dstMdecBuf, &dstMdecLen, 320,240);
+				mdec_depack(mdec_src, &dstMdecBuf, &dstMdecLen, 320, 240);
 				SDL_RWclose(mdec_src);
 
 				if (dstMdecBuf && dstMdecLen) {
-					SDL_Surface *image = mdec_surface(dstMdecBuf,320,240,0);
+					SDL_Surface* image = mdec_surface(dstMdecBuf, 320, 240, 0);
 					if (image) {
 						char tmpFilenameSuffix[15] = { 0 };
 						sprintf(tmpFilenameSuffix, "0%03d.BMP", filenameSuffix);
@@ -145,7 +146,7 @@ int convert_image(const char *filename)
 
 						save_bmp(newFilename, image);
 						SDL_FreeSurface(image);
-						
+
 						retval = 0;
 						filenameSuffix++;
 					}
@@ -165,16 +166,16 @@ int convert_image(const char *filename)
 	return retval;
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
 	int retval;
 
-	if (argc<2) {
+	if (argc < 2) {
 		fprintf(stderr, "Usage: %s /path/to/filename.bss\n", argv[0]);
 		return 1;
 	}
 
-	if (SDL_Init(SDL_INIT_VIDEO)<0) {
+	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 		fprintf(stderr, "Can not initialize SDL: %s\n", SDL_GetError());
 		return 1;
 	}

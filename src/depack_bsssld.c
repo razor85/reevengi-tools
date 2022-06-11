@@ -24,22 +24,22 @@
 
 #include <SDL.h>
 
-void memcpy_overlap(Uint8 *dest, Uint8 *src, int count) {
+void memcpy_overlap(Uint8* dest, Uint8* src, int count) {
 	int i;
 
-	for (i=0; i<count; i++) {
+	for (i = 0; i < count; i++) {
 		dest[i] = src[i];
 	}
 }
 
-void bsssld_depack_re2(Uint8 *srcPtr, int srcLen, Uint8 **dstBufPtr, int *dstLength)
+void bsssld_depack_re2(Uint8* srcPtr, int srcLen, Uint8** dstBufPtr, int* dstLength)
 {
 	Uint32 buflen;
-	Uint8 *dstPtr;
+	Uint8* dstPtr;
 	int srcPos, dstPos;
 	int count;
 
-	buflen = SDL_SwapLE32(*((Uint32 *)srcPtr));
+	buflen = SDL_SwapLE32(*((Uint32*)srcPtr));
 
 	dstPtr = *dstBufPtr = malloc(buflen);
 	memset(*dstBufPtr, 0, buflen);
@@ -47,28 +47,29 @@ void bsssld_depack_re2(Uint8 *srcPtr, int srcLen, Uint8 **dstBufPtr, int *dstLen
 
 	srcPos = 6;
 	dstPos = 0;
-	while ((srcPos<srcLen) && (dstPos<buflen)) {
+	while ((srcPos < srcLen) && (dstPos < buflen)) {
 
-		while ((srcPtr[srcPos] & 0x10)==0) {
+		while ((srcPtr[srcPos] & 0x10) == 0) {
 			count = srcPtr[srcPos] & 0x0f;
-			int srcOffset = (-256 | (srcPtr[srcPos] & 0xe0))<<3;
-			srcOffset |= srcPtr[srcPos+1];
+			int srcOffset = (-256 | (srcPtr[srcPos] & 0xe0)) << 3;
+			srcOffset |= srcPtr[srcPos + 1];
 			if (count == 0x0f) {
-				count += srcPtr[srcPos+2];
+				count += srcPtr[srcPos + 2];
 				srcPos += 3;
-			} else {
+			}
+			else {
 				srcPos += 2;
 			}
 			count += 3;
 
-			memcpy_overlap(&dstPtr[dstPos], &dstPtr[dstPos+srcOffset], count);
+			memcpy_overlap(&dstPtr[dstPos], &dstPtr[dstPos + srcOffset], count);
 			dstPos += count;
 		}
 
 		if (srcPtr[srcPos] == 0xff)
 			break;
 
-		count = ((srcPtr[srcPos++] | 0xffe0) ^ 0xffff)+1;
+		count = ((srcPtr[srcPos++] | 0xffe0) ^ 0xffff) + 1;
 		if (count == 0x10) {
 			count += srcPtr[srcPos++];
 		}
@@ -79,13 +80,13 @@ void bsssld_depack_re2(Uint8 *srcPtr, int srcLen, Uint8 **dstBufPtr, int *dstLen
 	}
 }
 
-void bsssld_depack_re3(Uint8 *srcPtr, int srcLen, Uint8 **dstBufPtr, int *dstLength)
+void bsssld_depack_re3(Uint8* srcPtr, int srcLen, Uint8** dstBufPtr, int* dstLength)
 {
-	Uint8 *dstPtr;
+	Uint8* dstPtr;
 	int srcPos, dstPos, i, numBlocks;
 	int count, offset;
 
-	numBlocks = SDL_SwapLE32(*((Uint32 *)srcPtr));
+	numBlocks = SDL_SwapLE32(*((Uint32*)srcPtr));
 
 	*dstLength = 65536;
 	dstPtr = malloc(*dstLength);
@@ -93,34 +94,35 @@ void bsssld_depack_re3(Uint8 *srcPtr, int srcLen, Uint8 **dstBufPtr, int *dstLen
 
 	srcPos = 4;
 	dstPos = 0;
-	for(i=0; (i<numBlocks) && (srcPos<srcLen); i++) {
+	for (i = 0; (i < numBlocks) && (srcPos < srcLen); i++) {
 		if ((srcPtr[srcPos] & 0x80) != 0) {
 			count = srcPtr[srcPos++] & 0x7f;
 
-			if (dstPos+count >= *dstLength) {
+			if (dstPos + count >= *dstLength) {
 				*dstLength += 65536;
-				dstPtr = (Uint8 *) realloc(dstPtr, *dstLength);
+				dstPtr = (Uint8*)realloc(dstPtr, *dstLength);
 			}
 
 			memcpy(&dstPtr[dstPos], &srcPtr[srcPos], count);
 			srcPos += count;
 			dstPos += count;
-		} else {
-			offset = srcPtr[srcPos++]<<8;
+		}
+		else {
+			offset = srcPtr[srcPos++] << 8;
 			offset |= srcPtr[srcPos++];
-			count = (offset>>11)+2;
+			count = (offset >> 11) + 2;
 			offset &= 0x7ff;
 
-			if (dstPos+count >= *dstLength) {
+			if (dstPos + count >= *dstLength) {
 				*dstLength += 65536;
-				dstPtr = (Uint8 *) realloc(dstPtr, *dstLength);
+				dstPtr = (Uint8*)realloc(dstPtr, *dstLength);
 			}
 
-			memcpy_overlap(&dstPtr[dstPos], &dstPtr[dstPos-(offset+4)], count);
+			memcpy_overlap(&dstPtr[dstPos], &dstPtr[dstPos - (offset + 4)], count);
 			dstPos += count;
 		}
 	}
 
 	*dstLength = dstPos;
-	*dstBufPtr = (Uint8 *) realloc(dstPtr, *dstLength);
+	*dstBufPtr = (Uint8*)realloc(dstPtr, *dstLength);
 }

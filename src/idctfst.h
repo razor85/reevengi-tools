@@ -27,6 +27,6 @@
 
 /*--- Functions ---*/
 
-void IDCT(BLOCK *blk,int k);
+void IDCT(BLOCK* blk, int k);
 
 #endif /* IDCTFST_H */

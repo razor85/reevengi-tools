@@ -77,7 +77,7 @@
 /* Table B-14, DCT coefficients	table zero,
 * codes	0100 ... 1xxx (used	for	all	other coefficients)
 */
-static const Uint32 VLCtabnext[12*2] =	{
+static const Uint32 VLCtabnext[12 * 2] = {
 	CODE(0,2,4),  CODE(2,1,4),	CODE2(1,1,3),  CODE2(1,-1,3),
 	CODE0(63,512,2), CODE0(63,512,2), CODE0(63,512,2), CODE0(63,512,2),	/*EOB*/
 	CODE2(0,1,2),  CODE2(0,1,2),	CODE2(0,-1,2),  CODE2(0,-1,2)
@@ -86,7 +86,7 @@ static const Uint32 VLCtabnext[12*2] =	{
 /* Table B-14, DCT coefficients	table zero,
 * codes	000001xx ... 00111xxx
 */
-static const Uint32 VLCtab0[60*2] = {
+static const Uint32 VLCtab0[60 * 2] = {
 	CODE0(63,0,6), CODE0(63,0,6),CODE0(63,0,6), CODE0(63,0,6), /* ESCAPE */
 	CODE2(2,2,7), CODE2(2,-2,7), CODE2(9,1,7), CODE2(9,-1,7),
 	CODE2(0,4,7), CODE2(0,-4,7), CODE2(8,1,7), CODE2(8,-1,7),
@@ -107,7 +107,7 @@ static const Uint32 VLCtab0[60*2] = {
 /* Table B-14, DCT coefficients	table zero,
 * codes	0000001000 ... 0000001111
 */
-static const Uint32 VLCtab1[8*2] =	{
+static const Uint32 VLCtab1[8 * 2] = {
 	CODE(16,1,10), CODE(5,2,10), CODE(0,7,10), CODE(2,3,10),
 	CODE(1,4,10), CODE(15,1,10), CODE(14,1,10),	CODE(4,2,10)
 };
@@ -115,7 +115,7 @@ static const Uint32 VLCtab1[8*2] =	{
 /* Table B-14/15, DCT coefficients table zero /	one,
 * codes	000000010000 ... 000000011111
 */
-static const Uint32 VLCtab2[16*2] = {
+static const Uint32 VLCtab2[16 * 2] = {
 	CODE(0,11,12), CODE(8,2,12), CODE(4,3,12), CODE(0,10,12),
 	CODE(2,4,12), CODE(7,2,12),	CODE(21,1,12), CODE(20,1,12),
 	CODE(0,9,12), CODE(19,1,12), CODE(18,1,12),	CODE(1,5,12),
@@ -125,7 +125,7 @@ static const Uint32 VLCtab2[16*2] = {
 /* Table B-14/15, DCT coefficients table zero /	one,
 * codes	0000000010000 ... 0000000011111
 */
-static const Uint32 VLCtab3[16*2] = {
+static const Uint32 VLCtab3[16 * 2] = {
 	CODE(10,2,13), CODE(9,2,13), CODE(5,3,13), CODE(3,4,13),
 	CODE(2,5,13), CODE(1,7,13),	CODE(1,6,13), CODE(0,15,13),
 	CODE(0,14,13), CODE(0,13,13), CODE(0,12,13), CODE(26,1,13),
@@ -135,7 +135,7 @@ static const Uint32 VLCtab3[16*2] = {
 /* Table B-14/15, DCT coefficients table zero /	one,
 * codes	00000000010000 ... 00000000011111
 */
-static const Uint32 VLCtab4[16*2] = {
+static const Uint32 VLCtab4[16 * 2] = {
 	CODE(0,31,14), CODE(0,30,14), CODE(0,29,14), CODE(0,28,14),
 	CODE(0,27,14), CODE(0,26,14), CODE(0,25,14), CODE(0,24,14),
 	CODE(0,23,14), CODE(0,22,14), CODE(0,21,14), CODE(0,20,14),
@@ -145,7 +145,7 @@ static const Uint32 VLCtab4[16*2] = {
 /* Table B-14/15, DCT coefficients table zero /	one,
 * codes	000000000010000	...	000000000011111
 */
-static const Uint32 VLCtab5[16*2] = {
+static const Uint32 VLCtab5[16 * 2] = {
 	CODE(0,40,15), CODE(0,39,15), CODE(0,38,15), CODE(0,37,15),
 	CODE(0,36,15), CODE(0,35,15), CODE(0,34,15), CODE(0,33,15),
 	CODE(0,32,15), CODE(1,14,15), CODE(1,13,15), CODE(1,12,15),
@@ -155,7 +155,7 @@ static const Uint32 VLCtab5[16*2] = {
 /* Table B-14/15, DCT coefficients table zero /	one,
 * codes	0000000000010000 ... 0000000000011111
 */
-static const Uint32 VLCtab6[16*2] = {
+static const Uint32 VLCtab6[16 * 2] = {
 	CODE(1,18,16), CODE(1,17,16), CODE(1,16,16), CODE(1,15,16),
 	CODE(6,3,16), CODE(16,2,16), CODE(15,2,16),	CODE(14,2,16),
 	CODE(13,2,16), CODE(12,2,16), CODE(11,2,16), CODE(31,1,16),
@@ -225,7 +225,7 @@ typedef struct {
 
 /*--- Variables ---*/
 
-static Uint16 *dstPointer;
+static Uint16* dstPointer;
 static int dstBufLen;
 static int dstOffset;
 
@@ -233,7 +233,7 @@ static vlc_header_t vlcHeader;
 
 /*--- Functions ---*/
 
-static void vlc_decode(SDL_RWops *src)
+static void vlc_decode(SDL_RWops* src)
 {
 	Uint16	tmp0[2];
 	Uint32	bitbuf;
@@ -243,118 +243,132 @@ static void vlc_decode(SDL_RWops *src)
 	/* Init buffer */
 	tmp0[0] = SDL_ReadLE16(src);
 	tmp0[1] = SDL_ReadLE16(src);
-	bitbuf = (tmp0[0]<<16)|tmp0[1];
+	bitbuf = (tmp0[0] << 16) | tmp0[1];
 	incnt = -16;
 
 	q_code = vlcHeader.quant << 10;
 	n = last_dc[0] = last_dc[1] = last_dc[2] = 0;
-	total_length = dstBufLen>>1 /*(vlcHeader.length+2+32) << 1*/;
+	total_length = dstBufLen >> 1 /*(vlcHeader.length+2+32) << 1*/;
 	/*printf("%d , %d\n", dstOffset, total_length);*/
-	while(dstOffset < total_length) {
+	while (dstOffset < total_length) {
 		Uint32 code2;
 
 		/* DC */
-		if (vlcHeader.version==2) {
-			code2 = Show_Bits(10)|(10<<16); /* DC code */
-		} else {
+		if (vlcHeader.version == 2) {
+			code2 = Show_Bits(10) | (10 << 16); /* DC code */
+		}
+		else {
 			code2 = Show_Bits(6);
-			if (n>=2) {
+			if (n >= 2) {
 				/* Y */
-				if (code2<48) {
+				if (code2 < 48) {
 					code2 = DC_Ytab0[code2];
-					code2 = (code2&0xffff0000)|((last_dc[2]+=VALOF(code2)*4)&0x3ff);
-				} else {
-					int nbit,val;
+					code2 = (code2 & 0xffff0000) | ((last_dc[2] += VALOF(code2) * 4) & 0x3ff);
+				}
+				else {
+					int nbit, val;
 					int bit = 3;
-					while(Show_Bits(bit)&1) {
+					while (Show_Bits(bit) & 1) {
 						bit++;
 					}
 					bit++;
-					nbit = bit*2-1;
-					val = Show_Bits(nbit)&((1<<bit)-1);
-					if ((val&(1<<(bit-1)))==0)
-						val -= (1<<bit)-1;
-					val = (last_dc[2]+=val*4);
-					code2 = (nbit<<16) | (val&0x3ff);
-				}
-			} else {
-				/* U,V */
-				if (code2<56) {
-					code2 = DC_UVtab0[code2];
-					code2 = (code2&0xffff0000)|((last_dc[n]+=VALOF(code2)*4)&0x3ff);
-				} else {
-					int nbit,val;
-					int bit = 4;
-					while(Show_Bits(bit)&1) {
-						bit++;
-					}
-					nbit = bit*2;
-					val = Show_Bits(nbit)&((1<<bit)-1);
-					if ((val&(1<<(bit-1)))==0)
-						val -= (1<<bit)-1;
-					val = (last_dc[n]+=val*4);
-					code2 = (nbit<<16) | (val&0x3ff);
+					nbit = bit * 2 - 1;
+					val = Show_Bits(nbit) & ((1 << bit) - 1);
+					if ((val & (1 << (bit - 1))) == 0)
+						val -= (1 << bit) - 1;
+					val = (last_dc[2] += val * 4);
+					code2 = (nbit << 16) | (val & 0x3ff);
 				}
 			}
-			if (++n==6)
-				n=0;
+			else {
+				/* U,V */
+				if (code2 < 56) {
+					code2 = DC_UVtab0[code2];
+					code2 = (code2 & 0xffff0000) | ((last_dc[n] += VALOF(code2) * 4) & 0x3ff);
+				}
+				else {
+					int nbit, val;
+					int bit = 4;
+					while (Show_Bits(bit) & 1) {
+						bit++;
+					}
+					nbit = bit * 2;
+					val = Show_Bits(nbit) & ((1 << bit) - 1);
+					if ((val & (1 << (bit - 1))) == 0)
+						val -= (1 << bit) - 1;
+					val = (last_dc[n] += val * 4);
+					code2 = (nbit << 16) | (val & 0x3ff);
+				}
+			}
+			if (++n == 6)
+				n = 0;
 		}
 		code2 |= q_code;
 
 		/* AC */
-		for(;;) {
+		for (;;) {
 #define	code code2
 #define	SBIT	17
 			/*printf("%d: 0x%04x\n", dstOffset, code2);*/
-			if (dstOffset<total_length) {
-				dstPointer[dstOffset++]= SDL_SwapLE16(code2);
-			} else {
-				fprintf(stderr, "vlc: writing out of range: %d\n", dstOffset*2);
+			if (dstOffset < total_length) {
+				dstPointer[dstOffset++] = SDL_SwapLE16(code2);
+			}
+			else {
+				fprintf(stderr, "vlc: writing out of range: %d\n", dstOffset * 2);
 				/*break;*/
 			}
 			Flush_Buffer(BITOF(code2));
 			code = Show_Bits(SBIT);
-			if (code>=1<<(SBIT- 2)) {
-				code2 = VLCtabnext[(code>>12)-8];
-				if (code2==EOB_CODE)
+			if (code >= 1 << (SBIT - 2)) {
+				code2 = VLCtabnext[(code >> 12) - 8];
+				if (code2 == EOB_CODE)
 					break;
-			} else if (code>=1<<(SBIT- 6)) {
-				code2 = VLCtab0[(code>>8)-8];
-				if (code2==ESCAPE_CODE) {
+			}
+			else if (code >= 1 << (SBIT - 6)) {
+				code2 = VLCtab0[(code >> 8) - 8];
+				if (code2 == ESCAPE_CODE) {
 					Flush_Buffer(6); /* ESCAPE len */
-					code2 = Show_Bits(16)| (16<<16);
+					code2 = Show_Bits(16) | (16 << 16);
 				}
-			} else if (code>=1<<(SBIT- 7)) {
-				code2 = VLCtab1[(code>>6)-16];
-			} else if (code>=1<<(SBIT- 8)) {
-				code2 = VLCtab2[(code>>4)-32];
-			} else if (code>=1<<(SBIT- 9)) {
-				code2 = VLCtab3[(code>>3)-32];
-			} else if (code>=1<<(SBIT-10)) {
-				code2 = VLCtab4[(code>>2)-32];
-			} else if (code>=1<<(SBIT-11)) {
-				code2 = VLCtab5[(code>>1)-32];
-			} else if (code>=1<<(SBIT-12)) {
-				code2 = VLCtab6[(code>>0)-32];
-			} else {
+			}
+			else if (code >= 1 << (SBIT - 7)) {
+				code2 = VLCtab1[(code >> 6) - 16];
+			}
+			else if (code >= 1 << (SBIT - 8)) {
+				code2 = VLCtab2[(code >> 4) - 32];
+			}
+			else if (code >= 1 << (SBIT - 9)) {
+				code2 = VLCtab3[(code >> 3) - 32];
+			}
+			else if (code >= 1 << (SBIT - 10)) {
+				code2 = VLCtab4[(code >> 2) - 32];
+			}
+			else if (code >= 1 << (SBIT - 11)) {
+				code2 = VLCtab5[(code >> 1) - 32];
+			}
+			else if (code >= 1 << (SBIT - 12)) {
+				code2 = VLCtab6[(code >> 0) - 32];
+			}
+			else {
 				do {
 					dstPointer[dstOffset++] = SDL_SwapLE16(EOB);
-				} while(dstOffset < total_length);
-	/*printf("vlc: end at %d bytes written\n", dstOffset*2);*/
+				} while (dstOffset < total_length);
+				/*printf("vlc: end at %d bytes written\n", dstOffset*2);*/
 				return;
 			}
 		}
-		if (dstOffset<total_length) {
+		if (dstOffset < total_length) {
 			dstPointer[dstOffset++] = SDL_SwapLE16(code2); /* EOB code */
-		} else {
-			fprintf(stderr, "vlc: writing out of range: %d\n", dstOffset*2);
+		}
+		else {
+			fprintf(stderr, "vlc: writing out of range: %d\n", dstOffset * 2);
 		}
 		Flush_Buffer(2); /* EOB bitlen */
 	}
 	/*printf("vlc: end at %d bytes written\n", dstOffset*2);*/
 }
 
-void vlc_depack(SDL_RWops *src, Uint8 **dstBufPtr, int *dstLength)
+void vlc_depack(SDL_RWops* src, Uint8** dstBufPtr, int* dstLength)
 {
 	*dstBufPtr = NULL;
 	*dstLength = 0;
@@ -368,10 +382,10 @@ void vlc_depack(SDL_RWops *src, Uint8 **dstBufPtr, int *dstLength)
 		return;
 	}
 
-	/*printf("vlc: length=0x%04x, quant=%d\n", vlcHeader.length, vlcHeader.quant);*/
+	printf("vlc: length=0x%04x, quant=%d\n", vlcHeader.length, vlcHeader.quant);
 
 	dstBufLen = (vlcHeader.length + 2) * sizeof(Uint32) * 2;
-	dstPointer = (Uint16 *) malloc(dstBufLen);
+	dstPointer = (Uint16*)malloc(dstBufLen);
 	if (dstPointer == NULL) {
 		return;
 	}
@@ -386,6 +400,6 @@ void vlc_depack(SDL_RWops *src, Uint8 **dstBufPtr, int *dstLength)
 	/*printf("vlc: final offset: 0x%08x\n", dstOffset);*/
 
 	/* Return depacked buffer */
-	*dstBufPtr = (Uint8 *) dstPointer;
+	*dstBufPtr = (Uint8*)dstPointer;
 	*dstLength = dstBufLen;
 }

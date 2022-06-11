@@ -21,6 +21,6 @@
 #ifndef DEPACK_VLC_H
 #define DEPACK_VLC_H
 
-void vlc_depack(SDL_RWops *src, Uint8 **dstPointer, int *dstLength);
+void vlc_depack(SDL_RWops* src, Uint8** dstPointer, int* dstLength);
 
 #endif /* DEPACK_VLC_H */
