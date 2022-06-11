@@ -63,6 +63,7 @@ int convert_image(const char* filename)
 	sprintf(newFilename, "%s", filename);
 
 	char* extensionPosition = strrchr(newFilename, '.');
+	uint32_t countBackgrounds = 0;
 
 	while (currentInterval < fileSize) {
 		SDL_RWseek(src, currentInterval, RW_SEEK_SET);
@@ -70,6 +71,8 @@ int convert_image(const char* filename)
 		uint16_t id = SDL_ReadLE16(src);
 		uint16_t quant = SDL_ReadLE16(src);
 		uint16_t version = SDL_ReadLE16(src);
+		
+		printf("NEW BACKGROUND %d\n", countBackgrounds++);
 
 		printf("ID %x - VERSION %x\n", id, version);
 		if (id != 0x3800 || version != 0x0003)
@@ -85,13 +88,13 @@ int convert_image(const char* filename)
 		vlc_depack(src, &dstBuffer, &dstBufLen);
 		printf("Reading TIM starting from %d\n", SDL_RWtell(src));
 
-		uint16_t timPrefix = SDL_ReadLE16(src);
-		if (timPrefix == 0x7220)
-			timPrefix = SDL_ReadLE16(src);
+		uint32_t peekLimit = SDL_RWtell(src) + 256;
+		while (SDL_RWtell(src) < peekLimit && SDL_ReadU8(src) != 0x1B)
+			;
 
-		const int hasTim = ((timPrefix == 0x0000 && SDL_ReadLE16(src) == 0xFFFF) || (timPrefix == 0xFFFF));
+		const int hasTim = SDL_ReadLE32(src) == 0x10;
 		if (hasTim) {
-			SDL_RWseek(src, -6, RW_SEEK_CUR);
+			SDL_RWseek(src, -11, RW_SEEK_CUR);
 
 			const uint32_t timLength = SDL_ReadLE32(src);
 			printf("TIM Length: %d\n", timLength);
