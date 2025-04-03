@@ -28,7 +28,7 @@
 	dstPointer	Pointer to depacked file buffer (NULL if failed)
 	dstLength	Length of depacked file (0 if failed)
 */
-void adt_depack(SDL_RWops *src, Uint8 **dstPointer, int *dstLength);
+void adt_depack(FILE *src, Uint8 **dstPointer, int *dstLength);
 
 /*
 	Create a SDL_Surface, for a depacked ADT file

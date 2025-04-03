@@ -5,3 +5,5 @@
 /src/Makefile.in
 /aclocal.m4
 /config.h.in
+
+/vs2005/*
