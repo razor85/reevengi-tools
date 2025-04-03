@@ -1,21 +1,21 @@
 /*
-	PIX file depacker
+    PIX file depacker
 
-	Copyright (C) 2009	Patrice Mandin
+    Copyright (C) 2009	Patrice Mandin
 
-	This program is free software; you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 2 of the License, or
-	(at your option) any later version.
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
 
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, write to the Free Software
-	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
 #include <stdio.h>
@@ -23,202 +23,194 @@
 #include <string.h>
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+#    include "config.h"
 #endif
 
 #include <SDL.h>
 
 #include "file_functions.h"
 
-const Uint16 pal_font[16]={
-	0x0000, 0xe77b, 0xdf39, 0xceb5,
-	0x31c2, 0xb5ce, 0xa94a, 0x9ce7,
-	0xa4c6, 0x0000, 0x0000, 0x0000,
-	0x0000, 0x0000, 0x0000, 0x0000
-};
+const Uint16 pal_font[16] = { 0x0000, 0xe77b, 0xdf39, 0xceb5, 0x31c2, 0xb5ce, 0xa94a, 0x9ce7,
+    0xa4c6, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000 };
 
-void convert_endianness(Uint16 *src, int length)
-{
+void convert_endianness(Uint16* src, int length) {
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
-	int i;
+    int i;
 
-	for (i=0; i<length>>1; i++) {
-		Uint16 v = *src;
-		*src++ = SDL_SwapLE16(v);
-	}
+    for (i = 0; i < length >> 1; i++) {
+        Uint16 v = *src;
+        *src++ = SDL_SwapLE16(v);
+    }
 #endif
 }
 
-void convert_alpha(Uint16 *src, int length)
-{
-	int i, r,g,b,a;
+void convert_alpha(Uint16* src, int length) {
+    int i, r, g, b, a;
 
-	for (i=0; i<length>>1; i++) {
-		Uint16 v = *src;
-		r = v & 31;
-		g = (v>>5) & 31;
-		b = (v>>10) & 31;
-		a = (v>>15) & 1;
-		if (r+g+b == 0) {
-			a = (a ? 1 : 0);
-		} else {
-			a = 1;
-		}
-		if (a) {
-			*src++ = v | 0x8000;
-		} else {
-			*src++ = v & 0x7fff;
-		}
-	}
+    for (i = 0; i < length >> 1; i++) {
+        Uint16 v = *src;
+        r = v & 31;
+        g = (v >> 5) & 31;
+        b = (v >> 10) & 31;
+        a = (v >> 15) & 1;
+        if (r + g + b == 0) {
+            a = (a ? 1 : 0);
+        } else {
+            a = 1;
+        }
+        if (a) {
+            *src++ = v | 0x8000;
+        } else {
+            *src++ = v & 0x7fff;
+        }
+    }
 }
 
-int convert_image(const char *filename)
-{
-	SDL_RWops *src;
-	Uint8 *dstBuffer;
-	int dstBufLen;
-	int width = 0, height = 0, bpp = 8, offset = 0;
-	const Uint16 *palette = NULL;	/* palette to use */
-	int num_pal = 0;	/* colors in palette */
-	SDL_Surface *image;
+int convert_image(const char* filename) {
+    SDL_RWops* src;
+    Uint8* dstBuffer;
+    int dstBufLen;
+    int width = 0, height = 0, bpp = 8, offset = 0;
+    const Uint16* palette = NULL; /* palette to use */
+    int num_pal = 0;              /* colors in palette */
+    SDL_Surface* image;
 
-	src = SDL_RWFromFile(filename, "rb");
-	if (!src) {
-		fprintf(stderr, "Can not open %s for reading\n", filename);
-		return 1;
-	}
-	dstBufLen=SDL_RWseek(src, 0, SEEK_END);
-	SDL_RWseek(src, 0, SEEK_SET);
+    src = SDL_RWFromFile(filename, "rb");
+    if (!src) {
+        fprintf(stderr, "Can not open %s for reading\n", filename);
+        return 1;
+    }
+    dstBufLen = SDL_RWseek(src, 0, SEEK_END);
+    SDL_RWseek(src, 0, SEEK_SET);
 
-	dstBuffer = (Uint8 *) malloc(dstBufLen);
-	if (dstBuffer) {
-		SDL_RWread(src, dstBuffer, dstBufLen, 1);
-	}
-	SDL_RWclose(src);
+    dstBuffer = (Uint8*) malloc(dstBufLen);
+    if (dstBuffer) {
+        SDL_RWread(src, dstBuffer, dstBufLen, 1);
+    }
+    SDL_RWclose(src);
 
-	if (!dstBuffer) {
-		return 1;
-	}
+    if (!dstBuffer) {
+        return 1;
+    }
 
-	/* Try to guess width, height */
-	switch(dstBufLen) {
-		case 2400:
-			width=40;
-			height=30*2;
-			break;
-		case 7168:
-			width=128;
-			height=56;
-			/*palette = pal_font;
-			num_pal = 16;*/
-			break;
-		case 21600:
-			width=40;
-			height=30*18;
-			break;
-/*		case 32768:
-			width=128;
-			height=128;
-			break;
-		case 34848:
-			width=256;
-			height=128;
-			offset = 34848-32768;
-			break;
-		case 85200:
-			width=40;
-			height=30*71;
-			break;*/
-		case 86400:
-			width=40;
-			height=30*72;
-			break;
-		case 153600:
-			width = 320;
-			height = 240;
-			bpp = 16;
-			break;
-		case 230400:
-			width = 320;
-			height = 360;
-			bpp = 16;
-			break;
-/*		case 274432:
-			width = 40;
-			height = 6860;
-			break;
-		case 1372160:
-			width = 112;
-			height = 512;
-			break;
-		case 4888576:
-			width = 40;
-			height = 6860;
-			bpp = 16;
-			break;*/
-	}
+    /* Try to guess width, height */
+    switch (dstBufLen) {
+    case 2400:
+        width = 40;
+        height = 30 * 2;
+        break;
+    case 7168:
+        width = 128;
+        height = 56;
+        /*palette = pal_font;
+        num_pal = 16;*/
+        break;
+    case 21600:
+        width = 40;
+        height = 30 * 18;
+        break;
+        /*		case 32768:
+                    width=128;
+                    height=128;
+                    break;
+                case 34848:
+                    width=256;
+                    height=128;
+                    offset = 34848-32768;
+                    break;
+                case 85200:
+                    width=40;
+                    height=30*71;
+                    break;*/
+    case 86400:
+        width = 40;
+        height = 30 * 72;
+        break;
+    case 153600:
+        width = 320;
+        height = 240;
+        bpp = 16;
+        break;
+    case 230400:
+        width = 320;
+        height = 360;
+        bpp = 16;
+        break;
+        /*		case 274432:
+                    width = 40;
+                    height = 6860;
+                    break;
+                case 1372160:
+                    width = 112;
+                    height = 512;
+                    break;
+                case 4888576:
+                    width = 40;
+                    height = 6860;
+                    bpp = 16;
+                    break;*/
+    }
 
-	if ((width==0) || (height==0)) {
-		fprintf(stderr, "Unknown dimensions for length %d\n", dstBufLen);
-		free(dstBuffer);
-		return 1;
-	}
+    if ((width == 0) || (height == 0)) {
+        fprintf(stderr, "Unknown dimensions for length %d\n", dstBufLen);
+        free(dstBuffer);
+        return 1;
+    }
 
-	if (bpp == 16) {
-		convert_endianness((Uint16 *) (&dstBuffer[offset]), dstBufLen);
-		convert_alpha((Uint16 *) (&dstBuffer[offset]), dstBufLen);
-	}
+    if (bpp == 16) {
+        convert_endianness((Uint16*) (&dstBuffer[offset]), dstBufLen);
+        convert_alpha((Uint16*) (&dstBuffer[offset]), dstBufLen);
+    }
 
-	image = SDL_CreateRGBSurfaceFrom(&dstBuffer[offset], width, height, bpp, (bpp==8 ? width : width<<1),
-		31,31<<5,31<<10,1<<15);
+    image = SDL_CreateRGBSurfaceFrom(&dstBuffer[offset], width, height, bpp,
+        (bpp == 8 ? width : width << 1), 31, 31 << 5, 31 << 10, 1 << 15);
 
-	/* Set a palette ? */
-	if ((bpp == 8) && palette) {
-		SDL_Color *colors = image->format->palette->colors;
-		int i;
-		for (i=0; i<256; i++) {
-			colors[i].r = 0;
-			colors[i].g = 0;
-			colors[i].b = 0;
-			if (i<num_pal) {
-				int c;
-				c = palette[i] & 31;
-				colors[i].r = (c<<3)|(c>>2);
-				c = (palette[i]>>5) & 31;
-				colors[i].g = (c<<3)|(c>>2);
-				c = (palette[i]>>10) & 31;
-				colors[i].b = (c<<3)|(c>>2);
-			}
-		}
-	}
+    /* Set a palette ? */
+    if ((bpp == 8) && palette) {
+        SDL_Color* colors = image->format->palette->colors;
+        int i;
+        for (i = 0; i < 256; i++) {
+            colors[i].r = 0;
+            colors[i].g = 0;
+            colors[i].b = 0;
+            if (i < num_pal) {
+                int c;
+                c = palette[i] & 31;
+                colors[i].r = (c << 3) | (c >> 2);
+                c = (palette[i] >> 5) & 31;
+                colors[i].g = (c << 3) | (c >> 2);
+                c = (palette[i] >> 10) & 31;
+                colors[i].b = (c << 3) | (c >> 2);
+            }
+        }
+    }
 
-	if (image) {
-		save_bmp(filename, image);
+    if (image) {
+        save_bmp(filename, image);
 
-		SDL_FreeSurface(image);
-	}
+        SDL_FreeSurface(image);
+    }
 
-	free(dstBuffer);
-	return 0;
+    free(dstBuffer);
+    return 0;
 }
 
-int main(int argc, char **argv)
-{
-	int retval;
+int main(int argc, char** argv) {
+    int retval;
 
-	if (argc<2) {
-		fprintf(stderr, "Usage: %s /path/to/filename.pix\n", argv[0]);
-		return 1;
-	}
+    if (argc < 2) {
+        fprintf(stderr, "Usage: %s /path/to/filename.pix\n", argv[0]);
+        return 1;
+    }
 
-	if (SDL_Init(SDL_INIT_VIDEO)<0) {
-		fprintf(stderr, "Can not initialize SDL: %s\n", SDL_GetError());
-		return 1;
-	}
-	atexit(SDL_Quit);
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        fprintf(stderr, "Can not initialize SDL: %s\n", SDL_GetError());
+        return 1;
+    }
+    atexit(SDL_Quit);
 
-	retval = convert_image(argv[1]);
+    retval = convert_image(argv[1]);
 
-	SDL_Quit();
-	return retval;
+    SDL_Quit();
+    return retval;
 }
