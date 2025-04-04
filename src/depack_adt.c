@@ -342,7 +342,7 @@ void adt_depack(FILE* src, Uint8** dstBufPtr, int* dstLength) {
     }
 
     printf("seek %ld\n", ftell(src));
-    seekResult = fseek(src, 4, SEEK_SET);
+    seekResult = fseek(src, 4, SEEK_CUR);
     if (seekResult < 0) {
         printf("Failed to seek!\n");
         return;

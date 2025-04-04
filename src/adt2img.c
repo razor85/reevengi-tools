@@ -52,20 +52,45 @@ static int noreorg = 0;
 
 /*--- Functions prototypes ---*/
 
-int convert_image(const char* filename);
+int convert_image(const char* filename, const char* outputName, int offset);
 
 /*--- Functions ---*/
 
 int main(int argc, char** argv) {
     int retval;
+    int offset = -1;
+
+    const char* output = "output";
+    const char* adt = "input.adt";
 
     if (argc < 2) {
-        fprintf(stderr, "Usage: %s [-noreorg] /path/to/filename.adt\n", argv[0]);
+        printf("Usage: %s [-noreorg] [-offset num] [-output name] -adt filename.adt\n", argv[0]);
         return 1;
     }
 
+    int adtPos = param_check("-adt", argc, argv);
+    if (adtPos < 0 || adtPos + 1 >= argc) {
+        printf("Usage: %s [-noreorg] [-offset num] [-output name] -adt filename.adt\n", argv[0]);
+        return 1;
+    }
+
+    adt = argv[adtPos + 1];
+
+    int outputPos = param_check("-output", argc, argv);
+    if (outputPos + 1 >= argc) {
+        printf("Usage: %s [-noreorg] [-offset num] [-output name] -adt filename.adt\n", argv[0]);
+        return 1;
+    }
+
+    output = argv[outputPos + 1];
+
     if (param_check("-noreorg", argc, argv) >= 0) {
         noreorg = 1;
+    }
+
+    offset = param_check("-offset", argc, argv);
+    if (offset >= 0) {
+        offset = atoi(argv[offset + 1]);
     }
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -74,13 +99,13 @@ int main(int argc, char** argv) {
     }
     atexit(SDL_Quit);
 
-    retval = convert_image(argv[argc - 1]);
+    retval = convert_image(adt, output, offset);
 
     SDL_Quit();
     return retval;
 }
 
-int convert_image(const char* filename) {
+int convert_image(const char* filename, const char* outputName, int offset) {
     Uint8* dstBuffer = NULL;
     int dstBufLen = 0;
     int retval = 1;
@@ -89,6 +114,10 @@ int convert_image(const char* filename) {
     if (!src) {
         printf("Can not open %s for reading\n", filename);
         return retval;
+    }
+
+    if (offset > 0) {
+        fseek(src, offset, SEEK_SET);
     }
 
     adt_depack(src, &dstBuffer, &dstBufLen);
@@ -138,7 +167,7 @@ int convert_image(const char* filename) {
             printf("Saving depacked raw at %d\n", (Uint32) tmpBufferPtr - (Uint32) dstBuffer);
             SDL_Surface* image = adt_surface((Uint16*) tmpBufferPtr, noreorg ^ 1);
             if (image) {
-                save_bmp(filename, image);
+                save_bmp(outputName, image);
                 SDL_FreeSurface(image);
 
                 retval = 0;
@@ -149,13 +178,13 @@ int convert_image(const char* filename) {
         case ADT_DEPACKED_TIM: {
             /* Tim image */
             printf("Saving tim at %d\n", (Uint32) tmpBufferPtr - (Uint32) dstBuffer);
-            save_tim(filename, (Uint8*) tmpBufferPtr, missingBytes);
+            save_tim(outputName, (Uint8*) tmpBufferPtr, missingBytes);
             missingBytes = 0;
             retval = 0;
         } break;
         case ADT_DEPACKED_UNK: {
             /* Unknown, save raw data */
-            save_raw(filename, (Uint8*) tmpBufferPtr, missingBytes);
+            save_raw(outputName, (Uint8*) tmpBufferPtr, missingBytes);
             missingBytes = 0;
             retval = 0;
         } break;
